@@ -1,85 +1,119 @@
-#include <Servo.h>
-#include <Stepper.h>
+#include <AccelStepper.h>
+#include <MultiStepper.h>
 
-const int pingPin = 7; // Trigger Pin of Ultrasonic Sensor
-const int echoPin = 6; // Echo Pin of Ultrasonic Sensor
+MultiStepper steppers;
+int a = 0, b= 0;
 
-int j, k, x;
+float c;
 
-const int stepsPerRevolution = 256;
+int turning=0;
 
-Servo myservo;
-Stepper myStepper(stepsPerRevolution, 11, 9, 8, 10);
+const int ping=13;
+const int echo=12;
 
+int y=0, x=0;
+int j;
 
-void setup() {
-    myservo.attach(7);
-    myservo.write(90);
-    myStepper.setSpeed(60);
+AccelStepper stepper2(AccelStepper::FULL4WIRE, 4,6,7,5);
+AccelStepper stepper1(AccelStepper::FULL4WIRE, 11,9,8,10);
 
-    pinMode(pingPin, OUTPUT);   
-    pinMode(echoPin, INPUT);
+void setup()
+{  
+  c=500.0;
+    stepper1.setMaxSpeed(c);
+    stepper1.setSpeed(c);
+    stepper1.setAcceleration(100.0);
+    //stepper1.moveTo(j);
     
-    j=80;
-    k=50;
-    x=0;
+    
+    stepper2.setMaxSpeed(c);
+    stepper2.setSpeed(c);
+    stepper2.setAcceleration(100.0);
+    //stepper2.moveTo(j);
+    
+    pinMode(ping, OUTPUT);   
+    pinMode(echo, INPUT);
+    
+    steppers.addStepper(stepper1);
+    steppers.addStepper(stepper2);
     
     Serial.begin(9600);
-  }
+}
+void loop()
+{
 
-void loop() {
-    long duration, cm;
+    long duration, cm, positions[2];
 
-    digitalWrite(pingPin, LOW);
+    digitalWrite(ping, LOW);
     delayMicroseconds(2);
    
-    digitalWrite(pingPin, HIGH);
+    digitalWrite(ping, HIGH);
     delayMicroseconds(10);
-    digitalWrite(pingPin, LOW);
+    digitalWrite(ping, LOW);
       
-    duration = pulseIn(echoPin, HIGH);
+    duration = pulseIn(echo, HIGH);
    
     cm = duration*(0.034/2);
-   
-   //Stepper Motor Instructions 
-    if(cm>1.6){
-        myStepper.step(j);
-        delay(50);
-        //If nothing is close, keep moving 
-      }
+    Serial.println(cm);
     
-    if(cm<1.5){
-        myStepper.step(0);
-        x++;
-        delay(50);
-        //If object is detected, stop moving and prepare to turn axle
-      }
+
+    j=300;
+
+
+        stepper1.setCurrentPosition(0);
+        stepper2.setCurrentPosition(0);
+        
+    if(cm>=10){
+      Serial.print("moving");
+      Serial.println();
+
+        stepper1.setCurrentPosition(0);
+        stepper2.setCurrentPosition(0);
+        a=350;
+        b=-350;
+        positions[0] = a;
+        positions[1] = -a;
+
+        
+        steppers.moveTo(positions);
+        steppers.runSpeedToPosition(); // Blocks until all are in position
+        
+    }
+    
+        if(cm<=9){
+            turning++;
+            
+            stepper1.setCurrentPosition(0);
+            stepper2.setCurrentPosition(0);
+            
+            if(turning == 1){
+            a=1300;
+            }
+            
+            if(turning == 2){
+            a=-1300;
+            }
+            
+            if(turning == 3){
+            while(1){
+              
+            }
+            }
+            
+            positions[0] = a;
+            positions[1] = a;
+            steppers.moveTo(positions);
+            steppers.runSpeedToPosition(); // Blocks until all are in position
+            
           
-    //Servo Motor Instructions
-    if(x=1){
-        myservo.write(180);
-        delay(100);
-        myStepper.step(k);
-        delay(80);
-        //Bring back servo to 90 deg?
-        //When first object is detected, move to the right
-      }
-    
-    if(x=2){
-        myservo.write(0);
-        delay(100);
-        myStepper.step(k);
-        delay(80);
-        //Bring back servo to 90 deg?
-        //When second object is detected, move to the left
-      }
+        
 
-    if(x=3){
-        while(1){
-            myStepper.step(0);
         }
-        //When last object is detected, assume reached finish line and stop
-      }
-    
+          
+        
+}
 
-  }
+
+
+
+            
