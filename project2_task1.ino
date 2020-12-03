@@ -1,71 +1,88 @@
-#include <Servo.h>
-#include <Stepper.h>
+#include <AccelStepper.h>
 
 const int X_pin = 0; // analog pin connected to X output
 const int Y_pin = 1; // analog pin connected to Y output
 
-int val=0, val2=0, j;
+int y=0, x=0;
+int j;
 
-const int stepsPerRevolution = 256;
+AccelStepper stepper2(AccelStepper::FULL4WIRE, 4,6,7,5);
+AccelStepper stepper1(AccelStepper::FULL4WIRE, 11,9,8,10);
 
-Servo myservo;
-Stepper myStepper(stepsPerRevolution, 11, 9, 8, 10);
+void setup()
+{  
+    stepper1.setMaxSpeed(1000.0);
+    stepper1.setAcceleration(200.0);
+    //stepper1.moveTo(j);
+    
+    
+    stepper2.setMaxSpeed(1000.0);
+    stepper2.setAcceleration(200.0);
+    //stepper2.moveTo(j);
+    
 
-
-void setup() {
-    myservo.attach(7);
-    myservo.write(90);
-    myStepper.setSpeed(60);
-  
-    j=80;
-
-    Serial.begin(9600);
-  }
-
-void loop() {
-    val = analogRead(Y_pin);
-    val2 = analogRead(X_pin);
-    Serial.println(val);
-    Serial.println(val2);
+}
+void loop()
+{
+    y = analogRead(X_pin);
+    x = analogRead(Y_pin);
+    Serial.print("X: ");
+    Serial.println(x);
+    Serial.print("Y: ");
+    Serial.println(y);
     Serial.println();
-    
-   
-   //Stepper Motor Instructions 
-    if(val<500){
-        myStepper.step(j);
-        delay(50);
-        //When Joystick pushed up, move forward in j increments
+    //delay(50);
+j=650;
+
+if(y>1020){
+    stepper2.setSpeed(j);
+    stepper1.setSpeed(-j); 
+    stepper1.runSpeed();
+    stepper2.runSpeed();
       }
-    
-    if(val>520){
-        myStepper.step(-j);
-        delay(50);
+        //When Joystick pushed up, move forward in j increments
+      
+
+    if(y<3){
+    stepper2.setSpeed(-j);
+    stepper1.setSpeed(j); 
+    stepper1.runSpeed();
+    stepper2.runSpeed();
         //When Joystick pushed down, move backwards in j increments
       }
     
-    if(val>501 && val<519){
-         delay(50);
+    if(y>4){
+        if(y<1019){
+        Serial.print("Dont move hoe");
+        Serial.println();
+         //delay(50);
          //Dead Band -- When Joystick resting, do not move 
       }
-        
-    //Servo Motor Instructions
-    if(val2>520){
-        myservo.write(180);
-        delay(100);
-        //When Joystick pushed to the right, move axle to the right
-      }
-    
-    if(val2<500){
-        myservo.write(0);
-        delay(100);
-        //When Joystick pushed to the left, move axle to the left
-      }
-    
-    if(val2>501 && val2<519){
-       myservo.write(90);
-       delay(100);
-       //Dead Band -- When Joystick resting, return to neutral position
-      }
-    
+    }
 
-  }
+if(x>1020){
+    stepper2.setSpeed(-j);
+    stepper1.setSpeed(-j); 
+    stepper1.runSpeed();
+    stepper2.runSpeed();
+      }
+        //When Joystick pushed up, move forward in j increments
+      
+
+    if(x<3){
+    stepper2.setSpeed(j);
+    stepper1.setSpeed(j); 
+    stepper1.runSpeed();
+    stepper2.runSpeed();
+        //When Joystick pushed down, move backwards in j increments
+      }
+    
+    if(x>4){
+        if(x<1019){
+        Serial.print("Dont move hoe");
+        Serial.println();
+         //delay(50);
+         //Dead Band -- When Joystick resting, do not move 
+      }
+    }
+}
